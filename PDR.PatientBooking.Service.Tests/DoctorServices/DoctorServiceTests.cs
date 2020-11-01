@@ -91,6 +91,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
         {
             //arrange
             var request = _fixture.Create<AddDoctorRequest>();
+            const int requestCreatedDateTimePrecision = 1000;
 
             var expected = new Doctor
             {
@@ -107,7 +108,12 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
             _doctorService.AddDoctor(request);
 
             //assert
-            _context.Doctor.Should().ContainEquivalentOf(expected, options => options.Excluding(doctor => doctor.Id));
+            _context.Doctor.Should().ContainEquivalentOf(expected, options =>
+                options.Excluding(doctor => doctor.Id)
+                    .Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation,
+                        requestCreatedDateTimePrecision,
+                        $"Time to process request should be less than {requestCreatedDateTimePrecision}ms."))
+                    .When(info => info.SelectedMemberPath.Equals(nameof(expected.Created))));
         }
 
         [Test]
