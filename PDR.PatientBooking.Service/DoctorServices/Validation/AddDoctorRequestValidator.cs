@@ -3,6 +3,7 @@ using PDR.PatientBooking.Service.DoctorServices.Requests;
 using PDR.PatientBooking.Service.Validation;
 using System.Collections.Generic;
 using System.Linq;
+using PDR.PatientBooking.Service.Validation.Helpers;
 
 namespace PDR.PatientBooking.Service.DoctorServices.Validation
 {
@@ -19,16 +20,14 @@ namespace PDR.PatientBooking.Service.DoctorServices.Validation
         {
             var result = new PdrValidationResult(true);
 
-            if (MissingRequiredFields(request, ref result))
-                return result;
-
-            if (DoctorAlreadyInDb(request, ref result))
-                return result;
+            MissingRequiredFields(request, ref result);
+            DoctorAlreadyInDb(request, ref result);
+            EmailValidationHelper.CheckEmailIsValid(request.Email, ref result);
 
             return result;
         }
 
-        public bool MissingRequiredFields(AddDoctorRequest request, ref PdrValidationResult result)
+        private void MissingRequiredFields(AddDoctorRequest request, ref PdrValidationResult result)
         {
             var errors = new List<string>();
 
@@ -45,22 +44,16 @@ namespace PDR.PatientBooking.Service.DoctorServices.Validation
             {
                 result.PassedValidation = false;
                 result.Errors.AddRange(errors);
-                return true;
             }
-
-            return false;
         }
 
-        private bool DoctorAlreadyInDb(AddDoctorRequest request, ref PdrValidationResult result)
+        private void DoctorAlreadyInDb(AddDoctorRequest request, ref PdrValidationResult result)
         {
             if (_context.Doctor.Any(x => x.Email == request.Email))
             {
                 result.PassedValidation = false;
                 result.Errors.Add("A doctor with that email address already exists");
-                return true;
             }
-
-            return false;
         }
     }
 }

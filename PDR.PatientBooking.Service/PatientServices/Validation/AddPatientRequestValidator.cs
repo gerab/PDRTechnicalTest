@@ -3,6 +3,7 @@ using PDR.PatientBooking.Service.PatientServices.Requests;
 using PDR.PatientBooking.Service.Validation;
 using System.Collections.Generic;
 using System.Linq;
+using PDR.PatientBooking.Service.Validation.Helpers;
 
 namespace PDR.PatientBooking.Service.PatientServices.Validation
 {
@@ -19,19 +20,15 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
         {
             var result = new PdrValidationResult(true);
 
-            if (MissingRequiredFields(request, ref result))
-                return result;
-
-            if (PatientAlreadyInDb(request, ref result))
-                return result;
-
-            if (ClinicNotFound(request, ref result))
-                return result;
+            MissingRequiredFields(request, ref result);
+            PatientAlreadyInDb(request, ref result);
+            ClinicNotFound(request, ref result);
+            EmailValidationHelper.CheckEmailIsValid(request.Email, ref result);
 
             return result;
         }
 
-        private bool MissingRequiredFields(AddPatientRequest request, ref PdrValidationResult result)
+        private void MissingRequiredFields(AddPatientRequest request, ref PdrValidationResult result)
         {
             var errors = new List<string>();
 
@@ -48,34 +45,25 @@ namespace PDR.PatientBooking.Service.PatientServices.Validation
             {
                 result.PassedValidation = false;
                 result.Errors.AddRange(errors);
-                return true;
             }
-
-            return false;
         }
 
-        private bool PatientAlreadyInDb(AddPatientRequest request, ref PdrValidationResult result)
+        private void PatientAlreadyInDb(AddPatientRequest request, ref PdrValidationResult result)
         {
             if (_context.Patient.Any(x => x.Email == request.Email))
             {
                 result.PassedValidation = false;
                 result.Errors.Add("A patient with that email address already exists");
-                return true;
             }
-
-            return false;
         }
 
-        private bool ClinicNotFound(AddPatientRequest request, ref PdrValidationResult result)
+        private void ClinicNotFound(AddPatientRequest request, ref PdrValidationResult result)
         {
             if (!_context.Clinic.Any(x => x.Id == request.ClinicId))
             {
                 result.PassedValidation = false;
                 result.Errors.Add("A clinic with that ID could not be found");
-                return true;
             }
-
-            return false;
         }
     }
 }
