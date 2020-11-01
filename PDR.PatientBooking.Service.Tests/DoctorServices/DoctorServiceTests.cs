@@ -112,7 +112,7 @@ namespace PDR.PatientBooking.Service.Tests.DoctorServices
                 options.Excluding(doctor => doctor.Id)
                     .Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation,
                         requestCreatedDateTimePrecision,
-                        "Time to process request should be less than {requestCreatedDateTimePrecision}ms."))
+                        $"Time to process request should be less than {requestCreatedDateTimePrecision}ms."))
                     .When(info => info.SelectedMemberPath.Equals(nameof(expected.Created))));
         }
 
