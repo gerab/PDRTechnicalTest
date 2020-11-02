@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using PDR.PatientBooking.Data;
+using PDR.PatientBooking.Data.Models;
 using PDR.PatientBooking.Service.BookingServices.Requests;
 using PDR.PatientBooking.Service.BookingServices.Responses;
 using PDR.PatientBooking.Service.BookingServices.Validation;
@@ -24,6 +25,7 @@ namespace PDR.PatientBooking.Service.BookingServices
         public async Task<PatientAppointmentResponse> GetPatientNextAppointmentAsync(long identificationNumber)
         {
             // todo: add validation
+
             var bookings = await _context.Order.OrderBy(x => x.StartTime).ToListAsync();
 
             if (bookings.All(x => x.Patient.Id != identificationNumber))
@@ -52,17 +54,17 @@ namespace PDR.PatientBooking.Service.BookingServices
             };
         }
 
-        public Task AddBookingAsync(AddBookingRequest request)
+        public async Task AddBookingAsync(AddBookingRequest request)
         {
             // todo: add validation
-            /*
-             var bookingId = new Guid();
-            var bookingStartTime = booking.StartTime;
-            var bookingEndTime = booking.EndTime;
-            var bookingPatientId = booking.PatientId;
-            var bookingPatient = _context.Patient.FirstOrDefault(x => x.Id == booking.PatientId);
-            var bookingDoctorId = booking.DoctorId;
-            var bookingDoctor = _context.Doctor.FirstOrDefault(x => x.Id == booking.DoctorId);
+
+            var bookingId = new Guid();
+            var bookingStartTime = request.StartTime;
+            var bookingEndTime = request.EndTime;
+            var bookingPatientId = request.PatientId;
+            var bookingPatient = _context.Patient.FirstOrDefault(x => x.Id == request.PatientId);
+            var bookingDoctorId = request.DoctorId;
+            var bookingDoctor = _context.Doctor.FirstOrDefault(x => x.Id == request.DoctorId);
             var bookingSurgeryType = _context.Patient.FirstOrDefault(x => x.Id == bookingPatientId)?.Clinic.SurgeryType ?? 0;
 
             var myBooking = new Order
@@ -79,11 +81,6 @@ namespace PDR.PatientBooking.Service.BookingServices
 
             await _context.Order.AddAsync(myBooking);
             await _context.SaveChangesAsync();
-
-            return StatusCode(200);
-             */
-
-            throw new NotImplementedException();
         }
     }
 }
