@@ -56,10 +56,9 @@ namespace PDR.PatientBooking.Service.BookingServices
 
         public async Task AddBookingAsync(AddBookingRequest request)
         {
-            // todo: add validation
             var validationResult = _validator.ValidateRequest(request);
 
-            if (validationResult.PassedValidation)
+            if (!validationResult.PassedValidation)
             {
                 throw DomainException.BadRequest(string.Join(", ", validationResult.Errors));
             }
