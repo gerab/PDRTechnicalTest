@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using AutoFixture;
 using FluentAssertions;
@@ -162,6 +163,20 @@ namespace PDR.PatientBooking.Service.Tests.BookingServices
             // assert
             res.ErrorCode.Should().Be(ErrorCode.BadRequest);
             res.Message.Should().Be("The past booking cannot be updated.");
+        }
+
+        [Test]
+        public void CancelBooking_ShouldCancel()
+        {
+            // arrange
+            var dbOrder = AddOrderToDb(DateTime.Today.AddDays(1));
+
+            // act
+            _bookingService.Awaiting(x => x.CancelBookingAsync(dbOrder.Id))
+                .Should().NotThrow();
+
+            // assert
+            _context.Order.First(x => x.Id == dbOrder.Id).IsCancelled.Should().BeTrue();
         }
 
         private Order AddOrderToDb(DateTime startDate, bool isCancelled = false)
