@@ -26,7 +26,7 @@ namespace PDR.PatientBooking.Service.BookingServices
         {
             // todo: move ifs to a validator
 
-            var bookings = await _context.Order.OrderBy(x => x.StartTime).ToListAsync();
+            var bookings = await _context.Order.Where(x => !x.IsCancelled).OrderBy(x => x.StartTime).ToListAsync();
 
             if (bookings.All(x => x.Patient.Id != identificationNumber))
             {
@@ -85,6 +85,27 @@ namespace PDR.PatientBooking.Service.BookingServices
             };
 
             await _context.Order.AddAsync(myBooking);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task CancelBookingAsync(Guid bookingId)
+        {
+            var booking = await _context.Order.FirstOrDefaultAsync(x => !x.IsCancelled && x.Id == bookingId);
+
+            if (booking == null)
+            {
+                // return StatusCode(502) seems to be not correct
+                // notify clients to expect correct http status code
+                throw DomainException.NotFound($"A booking with id '{bookingId}' doesn't exist or already cancelled.");
+            }
+
+            if (booking.StartTime <= DateTime.Now)
+            {
+                throw DomainException.BadRequest("The past booking cannot be updated.");
+            }
+
+            booking.IsCancelled = true;
+            // _context.Update(booking);
             await _context.SaveChangesAsync();
         }
     }

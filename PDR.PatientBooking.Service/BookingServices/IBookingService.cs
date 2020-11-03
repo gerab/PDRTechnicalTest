@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using PDR.PatientBooking.Service.BookingServices.Requests;
 using PDR.PatientBooking.Service.BookingServices.Responses;
@@ -9,5 +10,7 @@ namespace PDR.PatientBooking.Service.BookingServices
         Task<PatientAppointmentResponse> GetPatientNextAppointmentAsync(long identificationNumber);
 
         Task AddBookingAsync(AddBookingRequest request);
+
+        Task CancelBookingAsync(Guid bookingId);
     }
 }
