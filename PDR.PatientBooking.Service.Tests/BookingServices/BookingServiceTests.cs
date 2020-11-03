@@ -123,7 +123,7 @@ namespace PDR.PatientBooking.Service.Tests.BookingServices
         public void GetPatientNextAppointment_NoFutureAppointments_ThrowsDomainException()
         {
             // arrange
-            var dbOrder = AddOrderToDb();
+            var dbOrder = AddOrderToDb(DateTime.Today.AddDays(-1));
 
             // act & assert
             var res = _bookingService.Awaiting(x => x.GetPatientNextAppointmentAsync(dbOrder.PatientId))
@@ -134,10 +134,41 @@ namespace PDR.PatientBooking.Service.Tests.BookingServices
             res.Message.Should().Be("No future appointment were found for the patient.");
         }
 
-        private Order AddOrderToDb()
+        [Test]
+        public void CancelBooking_AlreadyCancelledAppointments_ThrowsDomainException()
+        {
+            // arrange
+            var dbOrder = AddOrderToDb(DateTime.Today.AddDays(1), isCancelled: true);
+
+            // act
+            var res = _bookingService.Awaiting(x => x.CancelBookingAsync(dbOrder.Id))
+                .Should().Throw<DomainException>().And;
+
+            // assert
+            res.ErrorCode.Should().Be(ErrorCode.NotFound);
+            res.Message.Should().Be($"A booking with id '{dbOrder.Id}' doesn't exist or already cancelled.");
+        }
+
+        [Test]
+        public void CancelBooking_NoFutureAppointments_ThrowsDomainException()
+        {
+            // arrange
+            var dbOrder = AddOrderToDb(DateTime.Today.AddDays(-1));
+
+            // act
+            var res = _bookingService.Awaiting(x => x.CancelBookingAsync(dbOrder.Id))
+                .Should().Throw<DomainException>().And;
+
+            // assert
+            res.ErrorCode.Should().Be(ErrorCode.BadRequest);
+            res.Message.Should().Be("The past booking cannot be updated.");
+        }
+
+        private Order AddOrderToDb(DateTime startDate, bool isCancelled = false)
         {
             var order = _fixture.Build<Order>()
-                .With(x => x.StartTime, DateTime.Today.AddDays(-1))
+                .With(x => x.StartTime, startDate)
+                .With(x => x.IsCancelled, isCancelled)
                 .Create();
             _context.Order.Add(order);
             _context.SaveChanges();
