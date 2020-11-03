@@ -1,13 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using PDR.PatientBooking.Data.Models;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using PDR.PatientBooking.Service.BookingServices;
 using PDR.PatientBooking.Service.BookingServices.Requests;
 using PDR.PatientBooking.Service.Enums;
 using PDR.PatientBooking.Service.Exceptions;
-using PDR.PatientBookingApi.Extensions;
 
 namespace PDR.PatientBookingApi.Controllers
 {
@@ -62,29 +59,22 @@ namespace PDR.PatientBookingApi.Controllers
             }
         }
 
-        private static MyOrderResult UpdateLatestBooking(List<Order> bookings2, int i)
+        [HttpPatch("cancel")]
+        public async Task<IActionResult> CancelBooking(Guid bookingId)
         {
-            var latestBooking = new MyOrderResult
+            try
             {
-                Id = bookings2[i].Id,
-                DoctorId = bookings2[i].DoctorId,
-                StartTime = bookings2[i].StartTime,
-                EndTime = bookings2[i].EndTime,
-                PatientId = bookings2[i].PatientId,
-                SurgeryType = (int) bookings2[i].GetSurgeryType()
-            };
-
-            return latestBooking;
-        }
-
-        private class MyOrderResult
-        {
-            public Guid Id { get; set; }
-            public DateTime StartTime { get; set; }
-            public DateTime EndTime { get; set; }
-            public long PatientId { get; set; }
-            public long DoctorId { get; set; }
-            public int SurgeryType { get; set; }
+                await _bookingService.CancelBookingAsync(bookingId);
+                return Ok(); // or NoContent();
+            }
+            catch(DomainException ex) when (ex.ErrorCode == ErrorCode.NotFound)
+            {
+                return NotFound(ex.Message);
+            }
+            catch(Exception ex)
+            {
+                return StatusCode(500, ex);
+            }
         }
     }
 }
