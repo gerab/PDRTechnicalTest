@@ -28,7 +28,7 @@ namespace PDR.PatientBooking.Service.ClinicServices.Validation
             return result;
         }
 
-        public bool MissingRequiredFields(AddClinicRequest request, ref PdrValidationResult result)
+        private bool MissingRequiredFields(AddClinicRequest request, ref PdrValidationResult result)
         {
             var errors = new List<string>();
 

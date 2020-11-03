@@ -24,7 +24,7 @@ namespace PDR.PatientBooking.Service.BookingServices
 
         public async Task<PatientAppointmentResponse> GetPatientNextAppointmentAsync(long identificationNumber)
         {
-            // todo: add validation
+            // todo: move ifs to a validator
 
             var bookings = await _context.Order.OrderBy(x => x.StartTime).ToListAsync();
 
@@ -57,6 +57,12 @@ namespace PDR.PatientBooking.Service.BookingServices
         public async Task AddBookingAsync(AddBookingRequest request)
         {
             // todo: add validation
+            var validationResult = _validator.ValidateRequest(request);
+
+            if (validationResult.PassedValidation)
+            {
+                throw DomainException.BadRequest(string.Join(", ", validationResult.Errors));
+            }
 
             var bookingId = new Guid();
             var bookingStartTime = request.StartTime;

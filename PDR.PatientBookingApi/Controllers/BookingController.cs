@@ -30,9 +30,13 @@ namespace PDR.PatientBookingApi.Controllers
                 var result = await _bookingService.GetPatientNextAppointmentAsync(identificationNumber);
                 return Ok(result);
             }
-            catch(DomainException ex) when (ex.ErrorCode == ErrorCode.NotFound)
+            catch (DomainException ex) when (ex.ErrorCode == ErrorCode.NotFound)
             {
                 return NotFound(ex.Message);
+            }
+            catch (DomainException ex) when (ex.ErrorCode == ErrorCode.BadRequest)
+            {
+                return BadRequest(ex.Message);
             }
             catch(Exception ex)
             {
