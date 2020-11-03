@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using PDR.PatientBooking.Data;
+﻿using PDR.PatientBooking.Data;
 using PDR.PatientBooking.Data.Models;
 using PDR.PatientBooking.Service.Enums;
 using PDR.PatientBooking.Service.PatientServices.Requests;
