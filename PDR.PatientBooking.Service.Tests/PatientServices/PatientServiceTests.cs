@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using AutoFixture;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
@@ -92,6 +91,7 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
         {
             //arrange
             var request = _fixture.Create<AddPatientRequest>();
+            const int requestCreatedDateTimePrecision = 1000;
 
             var expected = new Patient
             {
@@ -109,7 +109,12 @@ namespace PDR.PatientBooking.Service.Tests.PatientServices
             _patientService.AddPatient(request);
 
             //assert
-            _context.Patient.Should().ContainEquivalentOf(expected, options => options.Excluding(patient => patient.Id));
+            _context.Patient.Should().ContainEquivalentOf(expected, options =>
+                options.Excluding(patient => patient.Id)
+                    .Using<DateTime>(ctx => ctx.Subject.Should().BeCloseTo(ctx.Expectation,
+                        requestCreatedDateTimePrecision,
+                        $"Time to process request should be less than {requestCreatedDateTimePrecision}ms."))
+                    .When(info => info.SelectedMemberPath.Equals(nameof(expected.Created))));
         }
 
         [Test]
